@@ -463,7 +463,7 @@
 
   <script>
     // ==========================================
-    // BASE DE DADOS COMPLETA (JANEIRO + FEVEREIRO)
+    // BASE DE DADOS COMPLETA (JANEIRO + FEVEREIRO + MARÇO)
     // ==========================================
     const dadosVendas = [
       // --- JANEIRO: ELCANO (32 NFs) ---
@@ -605,7 +605,45 @@
       { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "77801", valor: 43551.78 },
       { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "77824", valor: 1184.15 },
       { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "77925", valor: 1263.83 },
-      { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "78017", valor: 478.00 }
+      { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "78017", valor: 478.00 },
+
+      // --- MARÇO: ELCANO (36 NFs) ---
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78918", valor: 522.19 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78919", valor: 6683.86 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78920", valor: 4204.19 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78921", valor: 1424.54 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78922", valor: 1081.62 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78923", valor: 4084.86 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78924", valor: 1170.90 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78925", valor: 4878.14 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78927", valor: 6454.97 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78928", valor: 4943.16 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79116", valor: 547.19 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79117", valor: 1102.68 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79119", valor: 813.37 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79120", valor: 9016.13 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79121", valor: 8973.64 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79122", valor: 2283.98 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79123", valor: 6886.17 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79124", valor: 3397.86 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79125", valor: 946.39 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79126", valor: 3134.57 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79128", valor: 9696.87 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79129", valor: 5929.94 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79320", valor: 7059.26 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79321", valor: 5403.34 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79322", valor: 593.15 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79323", valor: 8371.33 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79324", valor: 4507.03 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79325", valor: 711.30 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79326", valor: 939.43 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79327", valor: 3407.71 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "79328", valor: 6691.96 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79571", valor: 4431.16 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79572", valor: 724.43 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79573", valor: 761.26 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79576", valor: 417.72 },
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79617", valor: 250.00 }
     ];
 
     // Formatação monetária BRL
