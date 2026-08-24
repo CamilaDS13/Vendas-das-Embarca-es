@@ -227,7 +227,7 @@
       flex-direction: column;
       gap: 12px;
       overflow-y: auto;
-      max-height: 480px;
+      max-height: 520px;
     }
 
     .ranking-item {
@@ -284,7 +284,7 @@
     /* Tabela de Dados */
     .table-container {
       overflow-x: auto;
-      max-height: 480px;
+      max-height: 520px;
     }
 
     table {
@@ -463,9 +463,10 @@
 
   <script>
     // ==========================================
-    // BASE DE DADOS COMPLETA (ELCANO - JANEIRO)
+    // BASE DE DADOS COMPLETA (ELCANO + SVITZER = 49 NOTAS)
     // ==========================================
     const dadosVendas = [
+      // ELCANO (32 NFs)
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76766", valor: 9937.75 },
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76767", valor: 1113.57 },
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76768", valor: 8347.68 },
@@ -489,7 +490,34 @@
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77177", valor: 168.25 },
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77178", valor: 549.11 },
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77179", valor: 2931.42 },
-      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77180", valor: 552.39 }
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77180", valor: 552.39 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77183", valor: 6341.47 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77184", valor: 9650.10 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77188", valor: 844.61 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "77139", valor: 3452.21 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "77400", valor: 474.68 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "77401", valor: 877.57 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "77402", valor: 3832.59 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "77403", valor: 563.17 },
+
+      // SVITZER (17 NFs)
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "76930", valor: 1825.97 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "76931", valor: 1714.69 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "76932", valor: 1177.85 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "76933", valor: 1217.20 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77173", valor: 1024.37 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77174", valor: 1102.16 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "77175", valor: 1784.96 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "77176", valor: 1921.26 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "77405", valor: 703.91 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "77406", valor: 1116.55 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77407", valor: 1723.74 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77408", valor: 1432.34 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77409", valor: 125.97 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "77573", valor: 1250.12 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "77574", valor: 923.16 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77575", valor: 1659.54 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "77576", valor: 1995.35 }
     ];
 
     // Formatação monetária BRL
@@ -508,6 +536,11 @@
       const selEmpresa = document.getElementById('selectEmpresa');
       const selEmb = document.getElementById('selectEmbarcacao');
       const selLoja = document.getElementById('selectLoja');
+
+      selMes.innerHTML = '<option value="TODOS">Todos os Meses (Consolidado)</option>';
+      selEmpresa.innerHTML = '<option value="TODOS">Todas as Empresas</option>';
+      selEmb.innerHTML = '<option value="TODOS">Todas as Embarcações</option>';
+      selLoja.innerHTML = '<option value="TODOS">Todas as Lojas</option>';
 
       meses.forEach(m => selMes.innerHTML += `<option value="${m}">${m}</option>`);
       empresas.forEach(e => selEmpresa.innerHTML += `<option value="${e}">${e}</option>`);
