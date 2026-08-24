@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<!DOCTYPE html><html lang="pt-BR"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard de Vendas - Embarcações</title>
@@ -314,16 +312,6 @@
       background-color: rgba(255, 255, 255, 0.02);
     }
 
-    .tag {
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      background: rgba(56, 189, 248, 0.1);
-      color: var(--accent-blue);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-    }
-
     .text-right {
       text-align: right;
     }
@@ -463,7 +451,7 @@
 
   <script>
     // ==========================================
-    // BASE DE DADOS COMPLETA (JANEIRO, FEVEREIRO E MARÇO)
+    // BASE DE DADOS COMPLETA (JANEIRO + FEVEREIRO + MARÇO)
     // ==========================================
     const dadosVendas = [
       // --- JANEIRO: ELCANO (32 NFs) ---
@@ -607,7 +595,7 @@
       { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "77925", valor: 1263.83 },
       { loja: "MONDUBIM", mes: "FEVEREIRO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "78017", valor: 478.00 },
 
-      // --- MARÇO: ELCANO (36 NFs) ---
+      // --- MARÇO: ELCANO ---
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78918", valor: 522.19 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78919", valor: 6683.86 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "78920", valor: 4204.19 },
@@ -645,7 +633,7 @@
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79576", valor: 417.72 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "79617", valor: 250.00 },
 
-      // --- MARÇO: SVITZER (26 NFs) ---
+      // --- MARÇO: SVITZER ---
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "78890", valor: 1369.52 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ZOE", nf: "78891", valor: 1096.29 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "ARTHUR", nf: "78892", valor: 1278.93 },
@@ -670,7 +658,10 @@
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "BARCO NÃO IDENTIFICADO", nf: "79830", valor: 59.70 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "BARCO NÃO IDENTIFICADO", nf: "79831", valor: 2926.29 },
       { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "BARCO NÃO IDENTIFICADO", nf: "79832", valor: 2330.60 },
-      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "BARCO NÃO IDENTIFICADO", nf: "79833", valor: 2472.45 }
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "12.676.039/0008-89", empresa: "SVITZER", embarcacao: "BARCO NÃO IDENTIFICADO", nf: "79833", valor: 2472.45 },
+
+      // --- MARÇO: ALIANÇA ---
+      { loja: "MONDUBIM", mes: "MARÇO", cnpj: "02.427.026.0018/94", empresa: "ALIANÇA", embarcacao: "ALEBB", nf: "78841", valor: 49146.48 }
     ];
 
     // Formatação monetária BRL
@@ -678,128 +669,161 @@
       return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
-    // Inicialização dos Filtros Dinâmicos
+    // Obter lista única para os selects
     function carregarFiltros() {
-      const meses = [...new Set(dadosVendas.map(item => item.mes).filter(Boolean))];
-      const empresas = [...new Set(dadosVendas.map(item => item.empresa).filter(Boolean))];
-      const embarcacoes = [...new Set(dadosVendas.map(item => item.embarcacao).filter(Boolean))];
-      const lojas = [...new Set(dadosVendas.map(item => item.loja).filter(Boolean))];
+      const meses = [...new Set(dadosVendas.map(item => item.mes))];
+      const empresas = [...new Set(dadosVendas.map(item => item.empresa))];
+      const embarcacoes = [...new Set(dadosVendas.map(item => item.embarcacao))];
+      const lojas = [...new Set(dadosVendas.map(item => item.loja))];
 
-      const selMes = document.getElementById('selectMes');
-      const selEmpresa = document.getElementById('selectEmpresa');
-      const selEmb = document.getElementById('selectEmbarcacao');
-      const selLoja = document.getElementById('selectLoja');
-
-      selMes.innerHTML = '<option value="TODOS">Todos os Meses (Consolidado)</option>';
-      selEmpresa.innerHTML = '<option value="TODOS">Todas as Empresas</option>';
-      selEmb.innerHTML = '<option value="TODOS">Todas as Embarcações</option>';
-      selLoja.innerHTML = '<option value="TODOS">Todas as Lojas</option>';
-
-      meses.forEach(m => selMes.innerHTML += `<option value="${m}">${m}</option>`);
-      empresas.forEach(e => selEmpresa.innerHTML += `<option value="${e}">${e}</option>`);
-      embarcacoes.forEach(emb => selEmb.innerHTML += `<option value="${emb}">${emb}</option>`);
-      lojas.forEach(l => selLoja.innerHTML += `<option value="${l}">${l}</option>`);
+      preencherSelect('selectMes', meses);
+      preencherSelect('selectEmpresa', empresas);
+      preencherSelect('selectEmbarcacao', embarcacoes);
+      preencherSelect('selectLoja', lojas);
     }
 
-    // Função Principal para Atualizar os Componentes
+    function preencherSelect(id, valores) {
+      const select = document.getElementById(id);
+      // Mantém a primeira opção padrão e adiciona o resto
+      const primeiraOpcao = select.options[0].text;
+      select.innerHTML = `<option value="TODOS">${primeiraOpcao.includes('Todos') || primeiraOpcao.includes('Todas') ? primeiraOpcao : 'Todos'}</option>`;
+      
+      valores.forEach(val => {
+        const option = document.createElement('option');
+        option.value = val;
+        option.textContent = val;
+        select.appendChild(option);
+      });
+    }
+
+    // Filtrar e atualizar Dashboard
     function atualizarDashboard() {
-      const mesFiltro = document.getElementById('selectMes').value;
-      const empresaFiltro = document.getElementById('selectEmpresa').value;
-      const embFiltro = document.getElementById('selectEmbarcacao').value;
-      const lojaFiltro = document.getElementById('selectLoja').value;
+      const filtroMes = document.getElementById('selectMes').value;
+      const filtroEmpresa = document.getElementById('selectEmpresa').value;
+      const filtroEmbarcacao = document.getElementById('selectEmbarcacao').value;
+      const filtroLoja = document.getElementById('selectLoja').value;
 
-      // Filtragem dinâmica
-      const filtrados = dadosVendas.filter(item => {
-        const matchMes = (mesFiltro === "TODOS" || item.mes === mesFiltro);
-        const matchEmpresa = (empresaFiltro === "TODOS" || item.empresa === empresaFiltro);
-        const matchEmb = (embFiltro === "TODOS" || item.embarcacao === embFiltro);
-        const matchLoja = (lojaFiltro === "TODOS" || item.loja === lojaFiltro);
-        return matchMes && matchEmpresa && matchEmb && matchLoja;
+      const dadosFiltrados = dadosVendas.filter(item => {
+        return (filtroMes === 'TODOS' || item.mes === filtroMes) &&
+               (filtroEmpresa === 'TODOS' || item.empresa === filtroEmpresa) &&
+               (filtroEmbarcacao === 'TODOS' || item.embarcacao === filtroEmbarcacao) &&
+               (filtroLoja === 'TODOS' || item.loja === filtroLoja);
       });
 
-      // Cálculos de KPIs
-      const totalVendido = filtrados.reduce((acc, curr) => acc + curr.valor, 0);
-      const totalNotas = filtrados.length;
-      const ticketMedio = totalNotas > 0 ? totalVendido / totalNotas : 0;
+      renderizarKPIs(dadosFiltrados);
+      renderizarRanking(dadosFiltrados);
+      renderizarTabela(dadosFiltrados);
+    }
 
-      document.getElementById('kpiTotal').innerText = formatBRL(totalVendido);
-      document.getElementById('kpiNotas').innerText = totalNotas;
-      document.getElementById('kpiTicket').innerText = formatBRL(ticketMedio);
-      document.getElementById('contagemLinhas').innerText = `${totalNotas} notas encontradas`;
-      document.getElementById('rankBadgeInfo').innerText = mesFiltro === 'TODOS' ? 'Consolidado Geral' : `Mês de ${mesFiltro}`;
+    // Renderizar KPIs
+    function renderizarKPIs(dados) {
+      const totalFaturado = dados.reduce((acc, item) => acc + item.valor, 0);
+      const qtdNotas = dados.length;
+      const ticketMedio = qtdNotas > 0 ? totalFaturado / qtdNotas : 0;
 
-      // Agrupamento para o Ranking por Embarcação
-      const rankingObj = {};
-      filtrados.forEach(item => {
-        if (!rankingObj[item.embarcacao]) {
-          rankingObj[item.embarcacao] = { total: 0, qtd: 0 };
+      // Calcular Top Embarcação
+      const rankingEmb = {};
+      dados.forEach(item => {
+        rankingEmb[item.embarcacao] = (rankingEmb[item.embarcacao] || 0) + item.valor;
+      });
+
+      let topEmbName = "-";
+      let maxVal = -1;
+      for (let emb in rankingEmb) {
+        if (rankingEmb[emb] > maxVal) {
+          maxVal = rankingEmb[emb];
+          topEmbName = emb;
         }
-        rankingObj[item.embarcacao].total += item.valor;
-        rankingObj[item.embarcacao].qtd += 1;
-      });
-
-      const rankingArray = Object.keys(rankingObj).map(nome => ({
-        nome,
-        total: rankingObj[nome].total,
-        qtd: rankingObj[nome].qtd
-      })).sort((a, b) => b.total - a.total);
-
-      // Atualiza Top Embarcação no Card
-      document.getElementById('kpiTopEmbarcacao').innerText = rankingArray.length > 0 ? rankingArray[0].nome : '-';
-
-      // Renderiza Lista de Ranking
-      const rankContainer = document.getElementById('rankingList');
-      rankContainer.innerHTML = '';
-      if (rankingArray.length === 0) {
-        rankContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado.</div>`;
-      } else {
-        rankingArray.forEach((item, index) => {
-          const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
-          rankContainer.innerHTML += `
-            <div class="ranking-item ${rankClass}">
-              <div class="ranking-left">
-                <div class="rank-badge">${index + 1}º</div>
-                <div>
-                  <div class="rank-name">${item.nome}</div>
-                  <div class="rank-qty">${item.qtd} nota(s) emitida(s)</div>
-                </div>
-              </div>
-              <div class="rank-val">${formatBRL(item.total)}</div>
-            </div>
-          `;
-        });
       }
 
-      // Renderiza Tabela
-      const tbody = document.getElementById('tabelaCorpo');
-      tbody.innerHTML = '';
-      filtrados.forEach(item => {
-        tbody.innerHTML += `
-          <tr>
-            <td><span class="tag">${item.mes}</span></td>
-            <td>${item.loja}</td>
-            <td>${item.empresa}</td>
-            <td style="font-weight: 600;">${item.embarcacao}</td>
-            <td>#${item.nf}</td>
-            <td class="text-right" style="font-weight: 600; color: var(--accent-green);">${formatBRL(item.valor)}</td>
-          </tr>
+      document.getElementById('kpiTotal').textContent = formatBRL(totalFaturado);
+      document.getElementById('kpiNotas').textContent = qtdNotas;
+      document.getElementById('kpiTicket').textContent = formatBRL(ticketMedio);
+      document.getElementById('kpiTopEmbarcacao').textContent = topEmbName;
+    }
+
+    // Renderizar Ranking
+    function renderizarRanking(dados) {
+      const rankingMap = {};
+      dados.forEach(item => {
+        if (!rankingMap[item.embarcacao]) {
+          rankingMap[item.embarcacao] = { valor: 0, qtd: 0 };
+        }
+        rankingMap[item.embarcacao].valor += item.valor;
+        rankingMap[item.embarcacao].qtd += 1;
+      });
+
+      const rankingArray = Object.keys(rankingMap).map(emb => ({
+        embarcacao: emb,
+        valor: rankingMap[emb].valor,
+        qtd: rankingMap[emb].qtd
+      })).sort((a, b) => b.valor - a.valor);
+
+      const rankingList = document.getElementById('rankingList');
+      rankingList.innerHTML = '';
+
+      if (rankingArray.length === 0) {
+        rankingList.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum dado encontrado</p>';
+        return;
+      }
+
+      rankingArray.forEach((item, index) => {
+        const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+        const htmlItem = `
+          <div class="ranking-item ${rankClass}">
+            <div class="ranking-left">
+              <div class="rank-badge">${index + 1}</div>
+              <div>
+                <div class="rank-name">${item.embarcacao}</div>
+                <div class="rank-qty">${item.qtd} nota(s) emitida(s)</div>
+              </div>
+            </div>
+            <div class="rank-val">${formatBRL(item.valor)}</div>
+          </div>
         `;
+        rankingList.innerHTML += htmlItem;
       });
     }
 
-    // Exportação para CSV / Excel
-    function exportarExcel() {
-      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "Mês;Loja;Empresa;CNPJ;Embarcação;NF;Valor\n";
+    // Renderizar Tabela
+    function renderizarTabela(dados) {
+      const tbody = document.getElementById('tabelaCorpo');
+      tbody.innerHTML = '';
 
+      document.getElementById('contagemLinhas').textContent = `${dados.length} registros encontrados`;
+
+      if (dados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado para os filtros selecionados.</td></tr>`;
+        return;
+      }
+
+      dados.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="font-size: 11px; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 4px;">${item.mes}</span></td>
+          <td>${item.loja}</td>
+          <td>${item.empresa}</td>
+          <td><strong style="color: var(--text-main);">${item.embarcacao}</strong></td>
+          <td>#${item.nf}</td>
+          <td class="text-right" style="color: var(--accent-green); font-weight: 600;">${formatBRL(item.valor)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Função de Exportação para CSV/Excel
+    function exportarExcel() {
+      let csvContent = "data:text/csv;charset=utf-8,Mês;Loja;CNPJ;Empresa;Embarcação;NF;Valor\n";
+      
       dadosVendas.forEach(row => {
-        csvContent += `${row.mes};${row.loja};${row.empresa};${row.cnpj};${row.embarcacao};${row.nf};${row.valor.toFixed(2).replace('.', ',')}\n`;
+        const linha = [row.mes, row.loja, row.cnpj, row.empresa, row.embarcacao, row.nf, row.valor].join(";");
+        csvContent += linha + "\n";
       });
 
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "vendas_embarcacoes.csv");
+      link.setAttribute("download", "vendas_embarcacoes_marco.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
