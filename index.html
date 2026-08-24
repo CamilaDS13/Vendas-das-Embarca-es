@@ -93,7 +93,7 @@
     /* Barra de Filtros */
     .filter-bar {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       background-color: var(--bg-card);
       padding: 18px;
@@ -227,7 +227,7 @@
       flex-direction: column;
       gap: 12px;
       overflow-y: auto;
-      max-height: 450px;
+      max-height: 480px;
     }
 
     .ranking-item {
@@ -284,7 +284,7 @@
     /* Tabela de Dados */
     .table-container {
       overflow-x: auto;
-      max-height: 450px;
+      max-height: 480px;
     }
 
     table {
@@ -350,6 +350,13 @@
         <label><i class="fa-regular fa-calendar"></i> Filtrar por Mês</label>
         <select id="selectMes" onchange="atualizarDashboard()">
           <option value="TODOS">Todos os Meses (Consolidado)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="fa-solid fa-building"></i> Filtrar por Empresa</label>
+        <select id="selectEmpresa" onchange="atualizarDashboard()">
+          <option value="TODOS">Todas as Empresas</option>
         </select>
       </div>
 
@@ -456,7 +463,7 @@
 
   <script>
     // ==========================================
-    // BASE DE DADOS (Preencha ou adicione novas linhas aqui)
+    // BASE DE DADOS COMPLETA (ELCANO - JANEIRO)
     // ==========================================
     const dadosVendas = [
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76766", valor: 9937.75 },
@@ -468,7 +475,21 @@
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "76774", valor: 3542.82 },
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76777", valor: 119.55 },
       { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77043", valor: 402.57 },
-      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77044", valor: 289.11 }
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77044", valor: 289.11 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77045", valor: 190.35 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77046", valor: 29.37 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77130", valor: 2640.49 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77131", valor: 9547.39 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77132", valor: 1159.92 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77133", valor: 8332.05 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77134", valor: 1554.68 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77135", valor: 4880.56 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77136", valor: 3555.28 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77137", valor: 9083.76 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77177", valor: 168.25 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77178", valor: 549.11 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77179", valor: 2931.42 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE SÃO MARCELO", nf: "77180", valor: 552.39 }
     ];
 
     // Formatação monetária BRL
@@ -476,33 +497,38 @@
       return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
-    // Inicialização dos Filtros
+    // Inicialização dos Filtros Dinâmicos
     function carregarFiltros() {
       const meses = [...new Set(dadosVendas.map(item => item.mes).filter(Boolean))];
+      const empresas = [...new Set(dadosVendas.map(item => item.empresa).filter(Boolean))];
       const embarcacoes = [...new Set(dadosVendas.map(item => item.embarcacao).filter(Boolean))];
       const lojas = [...new Set(dadosVendas.map(item => item.loja).filter(Boolean))];
 
       const selMes = document.getElementById('selectMes');
+      const selEmpresa = document.getElementById('selectEmpresa');
       const selEmb = document.getElementById('selectEmbarcacao');
       const selLoja = document.getElementById('selectLoja');
 
       meses.forEach(m => selMes.innerHTML += `<option value="${m}">${m}</option>`);
-      embarcacoes.forEach(e => selEmb.innerHTML += `<option value="${e}">${e}</option>`);
+      empresas.forEach(e => selEmpresa.innerHTML += `<option value="${e}">${e}</option>`);
+      embarcacoes.forEach(emb => selEmb.innerHTML += `<option value="${emb}">${emb}</option>`);
       lojas.forEach(l => selLoja.innerHTML += `<option value="${l}">${l}</option>`);
     }
 
     // Função Principal para Atualizar os Componentes
     function atualizarDashboard() {
       const mesFiltro = document.getElementById('selectMes').value;
+      const empresaFiltro = document.getElementById('selectEmpresa').value;
       const embFiltro = document.getElementById('selectEmbarcacao').value;
       const lojaFiltro = document.getElementById('selectLoja').value;
 
-      // Filtragem
+      // Filtragem dinâmica
       const filtrados = dadosVendas.filter(item => {
         const matchMes = (mesFiltro === "TODOS" || item.mes === mesFiltro);
+        const matchEmpresa = (empresaFiltro === "TODOS" || item.empresa === empresaFiltro);
         const matchEmb = (embFiltro === "TODOS" || item.embarcacao === embFiltro);
         const matchLoja = (lojaFiltro === "TODOS" || item.loja === lojaFiltro);
-        return matchMes && matchEmb && matchLoja;
+        return matchMes && matchEmpresa && matchEmb && matchLoja;
       });
 
       // Cálculos de KPIs
@@ -575,7 +601,7 @@
       });
     }
 
-    // Exportação simples para CSV (compatível com Excel)
+    // Exportação para CSV / Excel
     function exportarExcel() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       csvContent += "Mês;Loja;Empresa;CNPJ;Embarcação;NF;Valor\n";
