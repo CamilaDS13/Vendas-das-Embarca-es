@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Vendas - Embarcações</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-purple: #a855f7;
+      --accent-gold: #eab308;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-title h1 {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-main);
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .btn-export {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-export:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    /* Barra de Filtros */
+    .filter-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      background-color: var(--bg-card);
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-group select {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      transition: border 0.2s;
+    }
+
+    .filter-group select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* Cards de KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-info span {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .kpi-info h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .icon-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
+    .icon-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+    .icon-purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+    .icon-gold { background: rgba(234, 179, 8, 0.15); color: var(--accent-gold); }
+
+    /* Layout de Conteúdo: Ranking + Tabela */
+    .dashboard-content {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .content-box {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .box-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Ranking List */
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      max-height: 450px;
+    }
+
+    .ranking-item {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      padding: 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .ranking-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .rank-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .rank-1 .rank-badge { background: #eab308; color: #000; }
+    .rank-2 .rank-badge { background: #94a3b8; color: #000; }
+    .rank-3 .rank-badge { background: #b45309; color: #fff; }
+
+    .rank-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .rank-qty {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .rank-val {
+      text-align: right;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--accent-green);
+    }
+
+    /* Tabela de Dados */
+    .table-container {
+      overflow-x: auto;
+      max-height: 450px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    thead th {
+      background-color: var(--bg-main);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .tag {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Cabeçalho -->
+    <header>
+      <div class="header-title">
+        <h1><i class="fa-solid fa-ship" style="color: var(--accent-blue);"></i> Painel de Vendas das Embarcações</h1>
+        <p>Acompanhamento analítico de faturamento e notas fiscais por embarcação</p>
+      </div>
+      <button class="btn-export" onclick="exportarExcel()">
+        <i class="fa-solid fa-file-excel"></i> Exportar Dados (CSV/Excel)
+      </button>
+    </header>
+
+    <!-- Filtros Interativos -->
+    <section class="filter-bar">
+      <div class="filter-group">
+        <label><i class="fa-regular fa-calendar"></i> Filtrar por Mês</label>
+        <select id="selectMes" onchange="atualizarDashboard()">
+          <option value="TODOS">Todos os Meses (Consolidado)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="fa-solid fa-anchor"></i> Filtrar por Embarcação</label>
+        <select id="selectEmbarcacao" onchange="atualizarDashboard()">
+          <option value="TODOS">Todas as Embarcações</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="fa-solid fa-store"></i> Loja</label>
+        <select id="selectLoja" onchange="atualizarDashboard()">
+          <option value="TODOS">Todas as Lojas</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Cards de Indicadores (KPIs) -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span>Total Faturado</span>
+          <h2 id="kpiTotal" style="color: var(--accent-green);">R$ 0,00</h2>
+        </div>
+        <div class="kpi-icon icon-green">
+          <i class="fa-solid fa-dollar-sign"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span>Qtd. Notas Emitidas</span>
+          <h2 id="kpiNotas">0</h2>
+        </div>
+        <div class="kpi-icon icon-blue">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span>Ticket Médio por NF</span>
+          <h2 id="kpiTicket">R$ 0,00</h2>
+        </div>
+        <div class="kpi-icon icon-purple">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span>Top Embarcação</span>
+          <h2 id="kpiTopEmbarcacao" style="font-size: 16px; margin-top: 10px;">-</h2>
+        </div>
+        <div class="kpi-icon icon-gold">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conteúdo Principal: Ranking + Tabela -->
+    <div class="dashboard-content">
+      
+      <!-- Ranking por Venda -->
+      <div class="content-box">
+        <div class="box-header">
+          <h3><i class="fa-solid fa-ranking-star" style="color: var(--accent-gold);"></i> Ranking de Vendas</h3>
+          <span id="rankBadgeInfo" style="font-size: 12px; color: var(--text-muted);">Consolidado</span>
+        </div>
+        <div class="ranking-list" id="rankingList">
+          <!-- Inserido dinamicamente via JS -->
+        </div>
+      </div>
+
+      <!-- Tabela Detalhada -->
+      <div class="content-box">
+        <div class="box-header">
+          <h3><i class="fa-solid fa-table-list" style="color: var(--accent-blue);"></i> Detalhamento das Notas</h3>
+          <span id="contagemLinhas" style="font-size: 12px; color: var(--text-muted);">0 registros</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Loja</th>
+                <th>Empresa</th>
+                <th>Embarcação</th>
+                <th>NF</th>
+                <th class="text-right">Valor da Nota</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaCorpo">
+              <!-- Inserido dinamicamente via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // ==========================================
+    // BASE DE DADOS (Preencha ou adicione novas linhas aqui)
+    // ==========================================
+    const dadosVendas = [
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76766", valor: 9937.75 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76767", valor: 1113.57 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76768", valor: 8347.68 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "76771", valor: 620.43 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "76772", valor: 569.99 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "76773", valor: 228.42 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "76774", valor: 3542.82 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE REIS MAGOS", nf: "76777", valor: 119.55 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77043", valor: 402.57 },
+      { loja: "MONDUBIM", mes: "JANEIRO", cnpj: "04.616.210/0013-01", empresa: "ELCANO", embarcacao: "FORTE DE SÃO LUIZ", nf: "77044", valor: 289.11 }
+    ];
+
+    // Formatação monetária BRL
+    const formatBRL = (val) => {
+      return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    // Inicialização dos Filtros
+    function carregarFiltros() {
+      const meses = [...new Set(dadosVendas.map(item => item.mes).filter(Boolean))];
+      const embarcacoes = [...new Set(dadosVendas.map(item => item.embarcacao).filter(Boolean))];
+      const lojas = [...new Set(dadosVendas.map(item => item.loja).filter(Boolean))];
+
+      const selMes = document.getElementById('selectMes');
+      const selEmb = document.getElementById('selectEmbarcacao');
+      const selLoja = document.getElementById('selectLoja');
+
+      meses.forEach(m => selMes.innerHTML += `<option value="${m}">${m}</option>`);
+      embarcacoes.forEach(e => selEmb.innerHTML += `<option value="${e}">${e}</option>`);
+      lojas.forEach(l => selLoja.innerHTML += `<option value="${l}">${l}</option>`);
+    }
+
+    // Função Principal para Atualizar os Componentes
+    function atualizarDashboard() {
+      const mesFiltro = document.getElementById('selectMes').value;
+      const embFiltro = document.getElementById('selectEmbarcacao').value;
+      const lojaFiltro = document.getElementById('selectLoja').value;
+
+      // Filtragem
+      const filtrados = dadosVendas.filter(item => {
+        const matchMes = (mesFiltro === "TODOS" || item.mes === mesFiltro);
+        const matchEmb = (embFiltro === "TODOS" || item.embarcacao === embFiltro);
+        const matchLoja = (lojaFiltro === "TODOS" || item.loja === lojaFiltro);
+        return matchMes && matchEmb && matchLoja;
+      });
+
+      // Cálculos de KPIs
+      const totalVendido = filtrados.reduce((acc, curr) => acc + curr.valor, 0);
+      const totalNotas = filtrados.length;
+      const ticketMedio = totalNotas > 0 ? totalVendido / totalNotas : 0;
+
+      document.getElementById('kpiTotal').innerText = formatBRL(totalVendido);
+      document.getElementById('kpiNotas').innerText = totalNotas;
+      document.getElementById('kpiTicket').innerText = formatBRL(ticketMedio);
+      document.getElementById('contagemLinhas').innerText = `${totalNotas} notas encontradas`;
+      document.getElementById('rankBadgeInfo').innerText = mesFiltro === 'TODOS' ? 'Consolidado Geral' : `Mês de ${mesFiltro}`;
+
+      // Agrupamento para o Ranking por Embarcação
+      const rankingObj = {};
+      filtrados.forEach(item => {
+        if (!rankingObj[item.embarcacao]) {
+          rankingObj[item.embarcacao] = { total: 0, qtd: 0 };
+        }
+        rankingObj[item.embarcacao].total += item.valor;
+        rankingObj[item.embarcacao].qtd += 1;
+      });
+
+      const rankingArray = Object.keys(rankingObj).map(nome => ({
+        nome,
+        total: rankingObj[nome].total,
+        qtd: rankingObj[nome].qtd
+      })).sort((a, b) => b.total - a.total);
+
+      // Atualiza Top Embarcação no Card
+      document.getElementById('kpiTopEmbarcacao').innerText = rankingArray.length > 0 ? rankingArray[0].nome : '-';
+
+      // Renderiza Lista de Ranking
+      const rankContainer = document.getElementById('rankingList');
+      rankContainer.innerHTML = '';
+      if (rankingArray.length === 0) {
+        rankContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado.</div>`;
+      } else {
+        rankingArray.forEach((item, index) => {
+          const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+          rankContainer.innerHTML += `
+            <div class="ranking-item ${rankClass}">
+              <div class="ranking-left">
+                <div class="rank-badge">${index + 1}º</div>
+                <div>
+                  <div class="rank-name">${item.nome}</div>
+                  <div class="rank-qty">${item.qtd} nota(s) emitida(s)</div>
+                </div>
+              </div>
+              <div class="rank-val">${formatBRL(item.total)}</div>
+            </div>
+          `;
+        });
+      }
+
+      // Renderiza Tabela
+      const tbody = document.getElementById('tabelaCorpo');
+      tbody.innerHTML = '';
+      filtrados.forEach(item => {
+        tbody.innerHTML += `
+          <tr>
+            <td><span class="tag">${item.mes}</span></td>
+            <td>${item.loja}</td>
+            <td>${item.empresa}</td>
+            <td style="font-weight: 600;">${item.embarcacao}</td>
+            <td>#${item.nf}</td>
+            <td class="text-right" style="font-weight: 600; color: var(--accent-green);">${formatBRL(item.valor)}</td>
+          </tr>
+        `;
+      });
+    }
+
+    // Exportação simples para CSV (compatível com Excel)
+    function exportarExcel() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "Mês;Loja;Empresa;CNPJ;Embarcação;NF;Valor\n";
+
+      dadosVendas.forEach(row => {
+        csvContent += `${row.mes};${row.loja};${row.empresa};${row.cnpj};${row.embarcacao};${row.nf};${row.valor.toFixed(2).replace('.', ',')}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "vendas_embarcacoes.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Inicialização ao carregar a página
+    window.onload = () => {
+      carregarFiltros();
+      atualizarDashboard();
+    };
+  </script>
+</body>
+</html>
