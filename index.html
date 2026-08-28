@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Vendas 2026 - Oficial</title>
+    <title>Painel de Vendas 2026 - Precisão Total</title>
+    <!-- Bibliotecas de Alta Performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg-color: #0f172a; --card-bg: #1e293b; --card-border: #334155;
@@ -14,28 +16,31 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px; }
-        .status-box { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; }
-        .online { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+        
+        .status-box { display: flex; align-items: center; gap: 10px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--card-border); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; }
+        .online { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
         .loading { background: var(--accent-blue); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; }
-        .card-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
-        .card-value { font-size: 24px; font-weight: 700; color: #fff; margin-top: 5px; display: block; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 4px; }
+        .card-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .card-value { font-size: 24px; font-weight: 700; color: #fff; margin-top: 4px; }
         .card-footer { font-size: 13px; color: var(--accent-green); font-weight: 600; }
 
         .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
-        .chart-container { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; height: 380px; }
+        .chart-container { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; height: 380px; position: relative; }
 
         .table-container { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 24px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; table-layout: fixed; }
         th { background-color: #111827; color: var(--text-muted); font-weight: 600; text-transform: uppercase; padding: 12px 10px; border: 1px solid var(--card-border); }
-        td { padding: 10px; border: 1px solid var(--card-border); white-space: nowrap; }
+        td { padding: 10px; border: 1px solid var(--card-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        tbody tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
         .val-cell { text-align: right; font-family: 'Courier New', monospace; }
-        .total-row { background-color: #111827; font-weight: bold; color: var(--accent-green); }
+        .vessel-cell { width: 220px; font-weight: bold; color: var(--text-main); }
+        .total-col { background-color: rgba(34, 197, 94, 0.05); color: var(--accent-green); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -45,30 +50,37 @@
             <h1>Painel de Vendas 2026</h1>
             <div class="status-box">
                 <div id="status-dot" class="dot loading"></div>
-                <span id="status-text">Sincronizando dados...</span>
+                <span id="status-text">Sincronizando com Google Sheets (via XLSX)...</span>
             </div>
         </div>
-        <button onclick="location.reload()" style="cursor:pointer; background: var(--accent-blue); color:white; border:none; padding:8px 15px; border-radius:5px; font-size:12px;">🔄 Atualizar Dashboard</button>
+        <button onclick="carregarDados()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">🔄 Atualizar Agora</button>
     </header>
 
     <div class="metrics-grid">
-        <div class="card"><span class="card-title">Faturamento Total</span><span id="card-total" class="card-value">R$ 0,00</span><span id="card-nf" class="card-footer">0 NF emitidas</span></div>
+        <div class="card">
+            <span class="card-title">Faturamento Total</span>
+            <span id="card-total" class="card-value">R$ 0,00</span>
+            <span id="card-nf" class="card-footer">0 NF emitidas</span>
+        </div>
         <div class="card"><span class="card-title">Ticket Médio</span><span id="card-media" class="card-value">R$ 0,00</span></div>
         <div class="card"><span class="card-title">Maior Faturamento</span><span id="card-barco" class="card-value">-</span></div>
         <div class="card"><span class="card-title">Melhor Mês</span><span id="card-mes" class="card-value">-</span></div>
     </div>
 
     <div class="charts-grid">
-        <div class="chart-container"><canvas id="barChart"></canvas></div>
-        <div class="chart-container"><canvas id="lineChart"></canvas></div>
+        <div class="chart-container"><div class="chart-title">Ranking Individual</div><canvas id="barChart"></canvas></div>
+        <div class="chart-container"><div class="chart-title">Evolução de Vendas</div><canvas id="lineChart"></canvas></div>
     </div>
 
     <div class="table-container">
-        <h3>Matriz Janeiro a Agosto (Conferência de Valores)</h3>
+        <h3>Matriz Detalhada: Janeiro a Agosto</h3>
         <table>
             <thead>
                 <tr>
-                    <th style="width:200px">Embarcação</th><th class="val-cell">JAN</th><th class="val-cell">FEV</th><th class="val-cell">MAR</th><th class="val-cell">ABR</th><th class="val-cell">MAI</th><th class="val-cell">JUN</th><th class="val-cell">JUL</th><th class="val-cell">AGO</th><th class="val-cell">TOTAL</th>
+                    <th class="vessel-cell">Embarcação</th>
+                    <th class="val-cell">JAN</th><th class="val-cell">FEV</th><th class="val-cell">MAR</th>
+                    <th class="val-cell">ABR</th><th class="val-cell">MAI</th><th class="val-cell">JUN</th>
+                    <th class="val-cell">JUL</th><th class="val-cell">AGO</th><th class="val-cell">TOTAL</th>
                 </tr>
             </thead>
             <tbody id="matrix-tbody"></tbody>
@@ -77,67 +89,77 @@
     </div>
 
     <script>
-        const URL_GOOGLE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTfJulxvGdrDMxqU1c3cDGeWJXnO09cYq4K-j7IUvJ65JRQCSty8sO4FJ0aRmwPegMCE0y6YYI9ASE7/pub?output=csv";
+        // USANDO LINK DE EXPORTAÇÃO XLSX (O mais seguro para evitar erro de vírgula)
+        const SHEET_ID = '16E2_dadwyBxkx1432Qhpt3hhrEuBofvvf_92UHd1JkI';
+        const URL_DADOS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=xlsx`;
 
         let rawData = [];
         const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto"];
         let chartBar, chartLine;
 
         async function carregarDados() {
+            const statusText = document.getElementById('status-text');
+            const dot = document.getElementById('status-dot');
+            dot.className = "dot loading";
+            statusText.innerText = "Processando Excel...";
+
             try {
-                const response = await fetch(URL_GOOGLE + "&t=" + new Date().getTime());
-                const csvText = await response.text();
+                const response = await fetch(URL_DADOS + "&t=" + new Date().getTime());
+                if (!response.ok) throw new Error("Acesso negado");
                 
-                // Parser que respeita aspas (fundamental para valores com vírgula)
-                const rows = parseCSV(csvText);
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 
+                // header: 1 traz os dados como uma matriz pura [ [A, B, C], [A, B, C] ]
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
                 if (rows.length > 1) {
-                    processarDados(rows);
-                    document.getElementById('status-dot').className = "dot online";
-                    document.getElementById('status-text').innerText = "Sincronizado com Sucesso";
+                    processarDadosSeguros(rows);
+                    dot.className = "dot online";
+                    statusText.innerText = "Sincronizado com Sucesso (" + rawData.length + " notas)";
                 }
             } catch (err) {
-                document.getElementById('status-text').innerText = "Erro ao conectar.";
+                dot.className = "dot error";
+                statusText.innerText = "Erro ao buscar dados. Verifique a permissão do Sheets.";
+                console.error(err);
             }
         }
 
-        function parseCSV(text) {
-            const lines = text.split(/\r?\n/);
-            return lines.map(line => {
-                const result = [];
-                let curr = '', inQuotes = false;
-                for (let char of line) {
-                    if (char === '"') inQuotes = !inQuotes;
-                    else if (char === ',' && !inQuotes) { result.push(curr); curr = ''; }
-                    else curr += char;
-                }
-                result.push(curr);
-                return result;
-            });
-        }
-
         function limparMoeda(v) {
-            if (!v) return 0;
-            // Remove pontos de milhar, troca vírgula por ponto
-            let n = v.toString().replace(/\./g, '').replace(',', '.').trim();
+            if (v === undefined || v === null || v === "") return 0;
+            if (typeof v === 'number') return v;
+            
+            // Remove R$, espaços e pontos de milhar, troca vírgula por ponto decimal
+            let n = v.toString().replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
             return parseFloat(n) || 0;
         }
 
-        function processarDados(rows) {
-            // No seu Sheets (conforme print): D(index 3)=Barco, E(index 4)=Data, G(index 6)=Valor
+        function processarDadosSeguros(rows) {
+            // No seu Excel conforme as fotos: 
+            // D (index 3) = Embarcação
+            // E (index 4) = Data
+            // G (index 6) = Valor
+            
             rawData = rows.slice(1).map(row => {
-                if(!row[3] || !row[6]) return null;
+                let barco = row[3] ? row[3].toString().trim() : null;
+                let valor = limparMoeda(row[6]);
+                let dataRaw = row[4];
                 
-                let dataStr = row[4].trim();
-                let mIdx = -1;
-                let partes = dataStr.split('/');
-                if(partes.length >= 2) mIdx = parseInt(partes[1]) - 1;
+                if (!barco || barco === "" || valor === 0) return null;
 
-                return {
-                    barco: row[3].trim(),
-                    valor: limparMoeda(row[6]),
-                    mesIdx: mIdx
-                };
+                let mIdx = -1;
+                if (typeof dataRaw === 'number') {
+                    // Trata data serial do Excel
+                    let dt = new Date((dataRaw - 25569) * 86400 * 1000);
+                    mIdx = dt.getMonth();
+                } else if (dataRaw) {
+                    let partes = dataRaw.toString().split('/');
+                    if(partes.length >= 2) mIdx = parseInt(partes[1]) - 1;
+                }
+
+                return { barco, valor, mesIdx: mIdx };
             }).filter(i => i !== null);
 
             renderizar();
@@ -146,50 +168,53 @@
         function renderizar() {
             let totalVal = 0;
             const matriz = {};
-            const totaisMes = Array(8).fill(0);
+            const totaisPorMes = Array(8).fill(0);
 
             rawData.forEach(n => {
                 totalVal += n.valor;
                 if (!matriz[n.barco]) matriz[n.barco] = Array(8).fill(0);
                 if (n.mesIdx >= 0 && n.mesIdx < 8) {
                     matriz[n.barco][n.mesIdx] += n.valor;
-                    totaisMes[n.mesIdx] += n.valor;
+                    totaisPorMes[n.mesIdx] += n.valor;
                 }
             });
 
-            const barcosOrd = Object.keys(matriz).sort((a,b) => matriz[b].reduce((x,y)=>x+y,0) - matriz[a].reduce((x,y)=>x+y,0));
+            const barcosOrd = Object.keys(matriz).sort((a,b) => 
+                matriz[b].reduce((x,y)=>x+y,0) - matriz[a].reduce((x,y)=>x+y,0)
+            );
 
             document.getElementById('card-total').innerText = totalVal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('card-nf').innerText = `▲ ${rawData.length} NF emitidas`;
             document.getElementById('card-media').innerText = (totalVal / rawData.length || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('card-barco').innerText = barcosOrd[0] || "-";
-            let maxM = Math.max(...totaisMes);
-            document.getElementById('card-mes').innerText = maxM > 0 ? nomesMeses[totaisMes.indexOf(maxM)] : "-";
+            
+            let maxMVal = Math.max(...totaisPorMes);
+            document.getElementById('card-mes').innerText = maxMVal > 0 ? nomesMeses[totaisPorMes.indexOf(maxMVal)] : "-";
 
             const tbody = document.getElementById('matrix-tbody');
             tbody.innerHTML = barcosOrd.map(b => {
                 let sB = matriz[b].reduce((x, y) => x + y, 0);
-                return `<tr><td><strong>${b}</strong></td>` + 
-                    matriz[b].map(v => `<td class="val-cell">${v > 0 ? v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') +
-                    `<td class="val-cell" style="background:rgba(34,197,94,0.05)"><strong>${sB.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong></td></tr>`;
+                return `<tr><td class="vessel-cell">${b}</td>` + 
+                    matriz[b].map(v => `<td class="val-cell">${v > 0 ? 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') +
+                    `<td class="val-cell total-col">R$ ${sB.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td></tr>`;
             }).join('');
 
-            let foot = `<tr class="total-row"><td>TOTAL MENSAL</td>`;
-            totaisMes.forEach(m => foot += `<td class="val-cell">${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
-            foot += `<td class="val-cell">${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
-            document.getElementById('matrix-tfoot').innerHTML = foot;
+            let footHtml = `<tr style="background:#111827; font-weight:bold; color:var(--accent-green)"><td>TOTAL MENSAL</td>`;
+            totaisPorMes.forEach(m => footHtml += `<td class="val-cell">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
+            footHtml += `<td class="val-cell">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+            document.getElementById('matrix-tfoot').innerHTML = footHtml;
 
             if(chartBar) chartBar.destroy();
             chartBar = new Chart(document.getElementById('barChart'), {
                 type: 'bar',
-                data: { labels: barcosOrd, datasets: [{ label: 'Faturamento', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6' }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { labels: barcosOrd, datasets: [{ label: 'Faturamento', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
             if(chartLine) chartLine.destroy();
             chartLine = new Chart(document.getElementById('lineChart'), {
                 type: 'line',
-                data: { labels: ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO"], datasets: [{ label: 'Vendas', data: totaisMes, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { labels: ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO"], datasets: [{ label: 'Vendas', data: totaisPorMes, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
         }
 
