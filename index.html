@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Vendas 2026 - Oficial</title>
+    <title>Painel de Vendas 2026 - Precisão Total</title>
+    <!-- Bibliotecas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -19,7 +20,6 @@
         .status-box { display: flex; align-items: center; gap: 10px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--card-border); }
         .dot { width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; }
         .online { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
-        .error { background: #ef4444; }
         .loading { background: var(--accent-blue); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
@@ -50,7 +50,7 @@
             <h1>Painel de Vendas 2026</h1>
             <div class="status-box">
                 <div id="status-dot" class="dot loading"></div>
-                <span id="status-text">Buscando dados no Google Sheets...</span>
+                <span id="status-text">Sincronizando...</span>
             </div>
         </div>
         <button onclick="carregarDados()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">🔄 Atualizar Agora</button>
@@ -68,8 +68,8 @@
     </div>
 
     <div class="charts-grid">
-        <div class="chart-container"><div class="chart-title">Ranking Individual</div><canvas id="barChart"></canvas></div>
-        <div class="chart-container"><div class="chart-title">Evolução de Vendas</div><canvas id="lineChart"></canvas></div>
+        <div class="chart-container"><div class="chart-title">Faturamento Individual</div><canvas id="barChart"></canvas></div>
+        <div class="chart-container"><div class="chart-title">Evolução Mensal</div><canvas id="lineChart"></canvas></div>
     </div>
 
     <div class="table-container">
@@ -100,42 +100,60 @@
             const statusText = document.getElementById('status-text');
             const dot = document.getElementById('status-dot');
             dot.className = "dot loading";
-            statusText.innerText = "Sincronizando...";
+            statusText.innerText = "Buscando dados no Google...";
 
             try {
                 const response = await fetch(URL_DADOS + "&t=" + new Date().getTime());
-                if (!response.ok) throw new Error("Acesso negado");
                 const csvText = await response.text();
+                
+                // Lê o CSV usando biblioteca para evitar erro de vírgulas e aspas
                 const workbook = XLSX.read(csvText, { type: 'string' });
-                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                
+                // Converte para JSON usando os nomes das colunas como chaves
+                const rows = XLSX.utils.sheet_to_json(sheet);
 
-                if (rows.length > 1) {
-                    processarDados(rows);
+                if (rows.length > 0) {
+                    processarDadosMapeados(rows);
                     dot.className = "dot online";
-                    statusText.innerText = "Dados Atualizados";
+                    statusText.innerText = "Sincronizado com Sucesso (" + rawData.length + " notas)";
                 }
             } catch (err) {
                 dot.className = "dot error";
-                statusText.innerText = "Erro: Abra o link do GitHub Pages";
+                statusText.innerText = "Erro ao buscar dados.";
+                console.error(err);
             }
         }
 
         function limparMoeda(v) {
-            if (!v) return 0;
+            if (v === undefined || v === null || v === "") return 0;
             if (typeof v === 'number') return v;
+            // Remove R$, espaços, pontos de milhar e troca vírgula por ponto decimal
             let n = v.toString().replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
             return parseFloat(n) || 0;
         }
 
-        function processarDados(rows) {
-            // D(3)=Barco, E(4)=Data, G(6)=Valor
-            rawData = rows.slice(1).map(row => {
-                if(!row[3] || !row[6]) return null;
+        function processarDadosMapeados(rows) {
+            // Busca os nomes das colunas de forma inteligente (fuzzy search)
+            const chaves = Object.keys(rows[0]);
+            const colBarco = chaves.find(k => k.toLowerCase().includes("embarca"));
+            const colData = chaves.find(k => k.toLowerCase().includes("data"));
+            const colValor = chaves.find(k => k.toLowerCase().includes("valor"));
+
+            rawData = rows.map(row => {
+                let barco = row[colBarco] ? row[colBarco].toString().trim() : null;
+                let valor = limparMoeda(row[colValor]);
+                let dataStr = row[colData] ? row[colData].toString().trim() : "";
+                
+                if (!barco || valor === 0) return null;
+
                 let mIdx = -1;
-                let partes = row[4].toString().split('/');
+                let partes = dataStr.split('/');
                 if(partes.length >= 2) mIdx = parseInt(partes[1]) - 1;
-                return { barco: row[3].toString().trim(), valor: limparMoeda(row[6]), mesIdx: mIdx };
+
+                return { barco, valor, mesIdx: mIdx };
             }).filter(i => i !== null);
+
             renderizar();
         }
 
@@ -153,15 +171,21 @@
                 }
             });
 
-            const barcosOrd = Object.keys(matriz).sort((a,b) => matriz[b].reduce((x,y)=>x+y,0) - matriz[a].reduce((x,y)=>x+y,0));
+            // Ordenação: Maior para Menor
+            const barcosOrd = Object.keys(matriz).sort((a,b) => 
+                matriz[b].reduce((x,y)=>x+y,0) - matriz[a].reduce((x,y)=>x+y,0)
+            );
 
+            // Cards
             document.getElementById('card-total').innerText = totalVal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('card-nf').innerText = `▲ ${rawData.length} NF emitidas`;
             document.getElementById('card-media').innerText = (totalVal / rawData.length || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('card-barco').innerText = barcosOrd[0] || "-";
-            let maxM = Math.max(...totaisPorMes);
-            document.getElementById('card-mes').innerText = maxM > 0 ? nomesMeses[totaisPorMes.indexOf(maxM)] : "-";
+            
+            let maxMVal = Math.max(...totaisPorMes);
+            document.getElementById('card-mes').innerText = maxMVal > 0 ? nomesMeses[totaisPorMes.indexOf(maxMVal)] : "-";
 
+            // Matriz
             const tbody = document.getElementById('matrix-tbody');
             tbody.innerHTML = barcosOrd.map(b => {
                 let sB = matriz[b].reduce((x, y) => x + y, 0);
@@ -170,11 +194,13 @@
                     `<td class="val-cell total-col">R$ ${sB.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td></tr>`;
             }).join('');
 
-            let foot = `<tr style="background:#111827; font-weight:bold; color:var(--accent-green)"><td>TOTAL MENSAL</td>`;
-            totaisPorMes.forEach(m => foot += `<td class="val-cell">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
-            foot += `<td class="val-cell">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
-            document.getElementById('matrix-tfoot').innerHTML = foot;
+            // Rodapé
+            let footHtml = `<tr style="background:#111827; font-weight:bold; color:var(--accent-green)"><td>TOTAL MENSAL</td>`;
+            totaisPorMes.forEach(m => footHtml += `<td class="val-cell">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
+            footHtml += `<td class="val-cell">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+            document.getElementById('matrix-tfoot').innerHTML = footHtml;
 
+            // Gráficos
             if(chartBar) chartBar.destroy();
             chartBar = new Chart(document.getElementById('barChart'), {
                 type: 'bar',
