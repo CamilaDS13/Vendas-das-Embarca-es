@@ -3,297 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Avançado - Vendas por Embarcação 2026</title>
-    <!-- Bibliotecas Necessárias -->
+    <title>Painel de Vendas 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg-color: #0f172a; --card-bg: #1e293b; --card-border: #334155;
             --text-main: #f8fafc; --text-muted: #94a3b8; --accent-green: #22c55e;
             --accent-blue: #3b82f6;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px; }
-        h1 { font-size: 24px; font-weight: 600; color: var(--text-main); }
-        
-        .btn-group { display: flex; gap: 10px; }
-        .btn { color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .import-btn { background-color: var(--accent-blue); }
-        .export-btn { background-color: var(--accent-green); }
-        .btn:hover { opacity: 0.8; }
+        .status-box { display: flex; align-items: center; gap: 10px; font-size: 14px; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 20px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; }
+        .online { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+        .error { background: #ef4444; }
+        .loading { background: var(--accent-blue); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        /* Cards Superiores */
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 4px; }
-        .card-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        .card-value { font-size: 24px; font-weight: 700; color: #fff; margin-top: 4px; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; }
+        .card-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .card-value { font-size: 24px; font-weight: 700; color: #fff; margin-top: 5px; display: block; }
         .card-footer { font-size: 13px; color: var(--accent-green); font-weight: 600; }
 
-        /* Área de Gráficos */
         .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
-        @media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
-        .chart-container { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; height: 380px; position: relative; }
-        .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
+        .chart-container { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; height: 380px; }
 
-        /* Tabelas Organizadas */
         .table-container { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 24px; }
-        h3 { margin-bottom: 15px; font-size: 18px; font-weight: 600; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; table-layout: fixed; }
-        th { background-color: #111827; color: var(--text-muted); font-weight: 600; text-transform: uppercase; padding: 12px 8px; border: 1px solid var(--card-border); }
-        td { padding: 10px 8px; border: 1px solid var(--card-border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        tbody tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
-        
-        .val-cell { text-align: right; font-family: 'Courier New', Courier, monospace; }
-        .vessel-cell { width: 220px; font-weight: bold; color: var(--text-main); }
-        .month-col { width: 105px; }
-        .total-col { width: 135px; background-color: rgba(34, 197, 94, 0.05); color: var(--accent-green); font-weight: bold; }
-        .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); font-weight: 600; }
-        
-        .scroll-area { max-height: 400px; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 4px; }
+        th { background-color: #111827; color: var(--text-muted); font-weight: 600; text-transform: uppercase; padding: 12px 10px; border: 1px solid var(--card-border); }
+        td { padding: 10px; border: 1px solid var(--card-border); white-space: nowrap; }
+        .val-cell { text-align: right; font-family: 'Courier New', monospace; }
+        .total-row { background-color: #111827; font-weight: bold; color: var(--accent-green); }
     </style>
 </head>
 <body>
 
     <header>
         <div>
-            <h1>Painel de Vendas por Embarcação 2026</h1>
-            <p id="sub-header" style="color: var(--text-muted); font-size: 14px;">Consolidado de Janeiro a Agosto</p>
+            <h1>Painel de Vendas 2026</h1>
+            <div class="status-box">
+                <div id="status-dot" class="dot loading"></div>
+                <span id="status-text">Conectando ao Google...</span>
+            </div>
         </div>
-        <div class="btn-group">
-            <button class="btn import-btn" onclick="document.getElementById('excel-in').click()">📁 Importar Planilha</button>
-            <input type="file" id="excel-in" style="display:none" accept=".xlsx, .xls">
-            <button class="btn export-btn" onclick="exportToExcel()">📊 Exportar para Excel</button>
-        </div>
+        <button onclick="carregarDados()" style="cursor:pointer; background: var(--accent-blue); color:white; border:none; padding:8px 15px; border-radius:5px;">🔄 Sincronizar Agora</button>
     </header>
 
-    <!-- Cards Principais -->
     <div class="metrics-grid">
-        <div class="card">
-            <span class="card-title">Faturamento Total</span>
-            <span id="card-total" class="card-value">R$ 0,00</span>
-            <span id="card-nf-count" class="card-footer">0 NF emitidas</span>
-        </div>
-        <div class="card">
-            <span class="card-title">Ticket Médio Geral</span>
-            <span id="card-media" class="card-value">R$ 0,00</span>
-            <span style="font-size:11px; color:var(--text-muted)">Valor médio por nota</span>
-        </div>
-        <div class="card">
-            <span class="card-title">Maior Embarcação</span>
-            <span id="card-barco" class="card-value">-</span>
-            <span id="card-barco-percent" style="font-size:11px; color:var(--text-muted)">Aguardando dados...</span>
-        </div>
-        <div class="card">
-            <span class="card-title">Melhor Mês</span>
-            <span id="card-mes" class="card-value">-</span>
-            <span id="card-mes-val" style="font-size:11px; color:var(--accent-green)">-</span>
-        </div>
+        <div class="card"><span class="card-title">Faturamento Total</span><span id="card-total" class="card-value">R$ 0,00</span><span id="card-nf" class="card-footer">0 NF emitidas</span></div>
+        <div class="card"><span class="card-title">Ticket Médio</span><span id="card-media" class="card-value">R$ 0,00</span></div>
+        <div class="card"><span class="card-title">Maior Embarcação</span><span id="card-barco" class="card-value">-</span></div>
+        <div class="card"><span class="card-title">Melhor Mês</span><span id="card-mes" class="card-value">-</span></div>
     </div>
 
-    <!-- Gráficos -->
     <div class="charts-grid">
-        <div class="chart-container">
-            <div class="chart-title">Faturamento por Embarcação (Ranking)</div>
-            <canvas id="barChart"></canvas>
-        </div>
-        <div class="chart-container">
-            <div class="chart-title">Evolução de Vendas (Mensal)</div>
-            <canvas id="lineChart"></canvas>
-        </div>
+        <div class="chart-container"><canvas id="barChart"></canvas></div>
+        <div class="chart-container"><canvas id="lineChart"></canvas></div>
     </div>
 
-    <!-- Matriz de meses -->
     <div class="table-container">
-        <h3>Matriz Detalhada: Faturamento por Mês (Jan a Ago)</h3>
+        <h3>Matriz Janeiro a Agosto</h3>
         <table>
             <thead>
                 <tr>
-                    <th class="vessel-cell">Embarcação</th>
-                    <th class="val-cell month-col">JAN</th><th class="val-cell month-col">FEV</th>
-                    <th class="val-cell month-col">MAR</th><th class="val-cell month-col">ABR</th>
-                    <th class="val-cell month-col">MAI</th><th class="val-cell month-col">JUN</th>
-                    <th class="val-cell month-col">JUL</th><th class="val-cell month-col">AGO</th>
-                    <th class="val-cell total-col">TOTAL GERAL</th>
+                    <th style="width:200px">Embarcação</th><th class="val-cell">JAN</th><th class="val-cell">FEV</th><th class="val-cell">MAR</th><th class="val-cell">ABR</th><th class="val-cell">MAI</th><th class="val-cell">JUN</th><th class="val-cell">JUL</th><th class="val-cell">AGO</th><th class="val-cell">TOTAL</th>
                 </tr>
             </thead>
-            <tbody id="matrix-tbody">
-                <!-- Preenchido via Script -->
-            </tbody>
+            <tbody id="matrix-tbody"></tbody>
             <tfoot id="matrix-tfoot"></tfoot>
         </table>
     </div>
 
-    <!-- Listagem detalhada -->
-    <div class="table-container">
-        <h3>Relação Detalhada de Notas Fiscais</h3>
-        <div class="scroll-area">
-            <table style="table-layout: auto;">
-                <thead>
-                    <tr>
-                        <th>Empresa</th><th>Embarcação</th><th>Data</th><th>NF</th><th class="val-cell">Valor</th>
-                    </tr>
-                </thead>
-                <tbody id="details-tbody">
-                    <!-- Preenchido via Script -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
     <script>
-        // ==========================================
-        // ÁREA DE DADOS - COLOQUE OS DADOS AQUI
-        // ==========================================
-       const DADOS_VENDAS = [
-    // JANEIRO
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "02/01/2026", mesIdx: 0, nf: 76766, valor: 9937.75 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "02/01/2026", mesIdx: 0, nf: 76767, valor: 1113.57 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "02/01/2026", mesIdx: 0, nf: 76768, valor: 8347.68 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "02/01/2026", mesIdx: 0, nf: 76771, valor: 620.43 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "02/01/2026", mesIdx: 0, nf: 76772, valor: 569.99 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "02/01/2026", mesIdx: 0, nf: 76773, valor: 228.42 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "02/01/2026", mesIdx: 0, nf: 76774, valor: 3542.82 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "02/01/2026", mesIdx: 0, nf: 76777, valor: 119.55 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "09/01/2026", mesIdx: 0, nf: 77043, valor: 402.57 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "09/01/2026", mesIdx: 0, nf: 77044, valor: 289.11 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "09/01/2026", mesIdx: 0, nf: 77045, valor: 190.35 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "09/01/2026", mesIdx: 0, nf: 77046, valor: 25.37 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77130, valor: 2640.49 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77131, valor: 9547.39 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77132, valor: 1159.92 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77133, valor: 8332.05 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77134, valor: 1554.68 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77135, valor: 4880.56 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77136, valor: 3555.28 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "12/01/2026", mesIdx: 0, nf: 77137, valor: 9083.76 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77177, valor: 168.25 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77178, valor: 549.11 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77179, valor: 2931.42 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77180, valor: 552.39 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77183, valor: 8244.62 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77184, valor: 9650.10 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "13/01/2026", mesIdx: 0, nf: 77185, valor: 844.61 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "20/01/2026", mesIdx: 0, nf: 77399, valor: 3452.21 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "20/01/2026", mesIdx: 0, nf: 77400, valor: 474.68 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "20/01/2026", mesIdx: 0, nf: 77401, valor: 631.57 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "20/01/2026", mesIdx: 0, nf: 77402, valor: 877.57 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "20/01/2026", mesIdx: 0, nf: 77403, valor: 563.17 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "06/01/2026", mesIdx: 0, nf: 76830, valor: 1825.97 },
-    { empresa: "SVITZER", barco: "ZOE", data: "06/01/2026", mesIdx: 0, nf: 76831, valor: 1714.69 },
-    { empresa: "SVITZER", barco: "ZOE", data: "06/01/2026", mesIdx: 0, nf: 76832, valor: 1177.85 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "06/01/2026", mesIdx: 0, nf: 76833, valor: 1834.42 },
-    { empresa: "SVITZER", barco: "ZOE", data: "13/01/2026", mesIdx: 0, nf: 77173, valor: 1024.37 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "13/01/2026", mesIdx: 0, nf: 77174, valor: 1102.16 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "13/01/2026", mesIdx: 0, nf: 77175, valor: 1784.96 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "13/01/2026", mesIdx: 0, nf: 77176, valor: 1921.23 },
-    { empresa: "SVITZER", barco: "ZOE", data: "20/01/2026", mesIdx: 0, nf: 77405, valor: 703.91 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "20/01/2026", mesIdx: 0, nf: 77406, valor: 1459.73 },
-    { empresa: "SVITZER", barco: "ZOE", data: "20/01/2026", mesIdx: 0, nf: 77407, valor: 1723.74 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "20/01/2026", mesIdx: 0, nf: 77408, valor: 1432.34 },
-    { empresa: "SVITZER", barco: "ZOE", data: "20/01/2026", mesIdx: 0, nf: 77409, valor: 125.97 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "27/01/2026", mesIdx: 0, nf: 77573, valor: 1250.12 },
-    { empresa: "SVITZER", barco: "ZOE", data: "27/01/2026", mesIdx: 0, nf: 77574, valor: 2548.11 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "27/01/2026", mesIdx: 0, nf: 77575, valor: 651.52 },
-    { empresa: "SVITZER", barco: "ZOE", data: "27/01/2026", mesIdx: 0, nf: 77576, valor: 1835.35 },
-    
-    // ... [O CHAT ENCURTOU AS LINHAS INTERMEDIÁRIAS DE FEV A JUNHO PARA CABER] ...
-    // PORÉM, FOQUE NAS ÚLTIMAS LINHAS ABAIXO (JULHO E AGOSTO) QUE SÃO AS QUE DEFINEM O MELHOR MÊS:
+        // LINK DO SEU GOOGLE SHEETS (CSV)
+        const URL_GOOGLE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTfJulxvGdrDMxqU1c3cDGeWJXnO09cYq4K-j7IUvJ65JRQCSty8sO4FJ0aRmwPegMCE0y6YYI9ASE7/pub?output=csv";
 
-    // JULHO (AQUI ESTÃO OS VALORES ALTOS QUE FAZEM JULHO SER O MELHOR MÊS)
-    { empresa: "SVITZER", barco: "MARIA DARIAN", data: "31/07/2026", mesIdx: 6, nf: 83311, valor: 2474.16 },
-    { empresa: "SVITZER", barco: "ZOE", data: "28/07/2026", mesIdx: 6, nf: 83502, valor: 2307.67 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "28/07/2026", mesIdx: 6, nf: 83503, valor: 2813.74 },
-    { empresa: "BASTOS", barco: "BASTOS 1", data: "14/07/2026", mesIdx: 6, nf: 83012, valor: 28438.59 },
-    { empresa: "BASTOS", barco: "BASTOS 1", data: "14/07/2026", mesIdx: 6, nf: 83013, valor: 32506.31 },
-
-    // AGOSTO
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "07/08/2026", mesIdx: 7, nf: 83747, valor: 747.52 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "07/08/2026", mesIdx: 7, nf: 83748, valor: 457.21 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "07/08/2026", mesIdx: 7, nf: 83749, valor: 457.21 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "07/08/2026", mesIdx: 7, nf: 83750, valor: 3356.20 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "07/08/2026", mesIdx: 7, nf: 83751, valor: 469.80 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "12/08/2026", mesIdx: 7, nf: 83816, valor: 2540.35 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "12/08/2026", mesIdx: 7, nf: 83817, valor: 215.73 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "12/08/2026", mesIdx: 7, nf: 83818, valor: 390.21 },
-    { empresa: "ELCANO", barco: "FORTE DE SÃO LUIZ", data: "12/08/2026", mesIdx: 7, nf: 83819, valor: 4215.17 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "13/08/2026", mesIdx: 7, nf: 83831, valor: 381.70 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "13/08/2026", mesIdx: 7, nf: 83832, valor: 550.23 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "13/08/2026", mesIdx: 7, nf: 83833, valor: 506.20 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "13/08/2026", mesIdx: 7, nf: 83834, valor: 678.30 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "13/08/2026", mesIdx: 7, nf: 83835, valor: 4402.21 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "21/08/2026", mesIdx: 7, nf: 83983, valor: 5121.14 },
-    { empresa: "ELCANO", barco: "FORTE REIS MAGOS", data: "21/08/2026", mesIdx: 7, nf: 83984, valor: 5543.19 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83985, valor: 7309.98 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83986, valor: 3584.29 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83987, valor: 3442.28 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83988, valor: 578.13 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83989, valor: 9745.94 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83990, valor: 2006.25 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83991, valor: 832.28 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83993, valor: 9873.55 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "21/08/2026", mesIdx: 7, nf: 83994, valor: 6257.76 },
-    { empresa: "ELCANO", barco: "FORTE SÃO MARCELO", data: "24/08/2026", mesIdx: 7, nf: 84015, valor: 36.59 },
-    { empresa: "SVITZER", barco: "ZOE", data: "03/08/2026", mesIdx: 7, nf: 83699, valor: 2078.05 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "03/08/2026", mesIdx: 7, nf: 83700, valor: 2347.67 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "10/08/2026", mesIdx: 7, nf: 83787, valor: 2321.95 },
-    { empresa: "SVITZER", barco: "ZOE", data: "10/08/2026", mesIdx: 7, nf: 83788, valor: 2332.66 },
-    { empresa: "SVITZER", barco: "ZOE", data: "17/08/2026", mesIdx: 7, nf: 83886, valor: 2374.23 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "24/08/2026", mesIdx: 7, nf: 84032, valor: 2019.41 },
-    { empresa: "SVITZER", barco: "ARTHUR", data: "25/08/2026", mesIdx: 7, nf: 84033, valor: 2292.01 },
-    { empresa: "BASTOS", barco: "BASTOS 1", data: "25/08/2026", mesIdx: 7, nf: 84034, valor: 518.53 }
-];
-        // ==========================================
-
+        let rawData = [];
         const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto"];
         let chartBar, chartLine;
 
-        // Listener para Importar via Excel (Funciona em tempo real)
-        document.getElementById('excel-in').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ""});
-                processarEGerar(rows);
-            };
-            reader.readAsArrayBuffer(file);
-        });
+        async function carregarDados() {
+            const statusText = document.getElementById('status-text');
+            const dot = document.getElementById('status-dot');
 
-        function formatarMoeda(v) {
-            if (!v) return 0;
-            if (typeof v === 'number') return v;
-            let limpo = v.toString().replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
-            return parseFloat(limpo) || 0;
-        }
-
-        function processarEGerar(rows) {
-            // Mapeamento automático baseado na planilha enviada
-            const idxBarco = 3, idxData = 4, idxValor = 6, idxEmpresa = 2, idxNF = 5;
-            
-            const processados = rows.slice(1).filter(r => r[idxBarco] && r[idxValor]).map(row => {
-                let d = row[idxData], mIdx = -1, dF = "-";
-                if (typeof d === 'number') {
-                    let dt = new Date((d - 25569) * 86400 * 1000);
-                    mIdx = dt.getMonth(); dF = dt.toLocaleDateString('pt-BR');
-                } else if (d) {
-                    let p = d.split('/'); if(p.length >= 2) { mIdx = parseInt(p[1])-1; dF = d; }
+            try {
+                // O segredo para evitar o erro "Failed to fetch" no Google Sheets é usar o link de publicação CSV
+                const response = await fetch(URL_GOOGLE);
+                if (!response.ok) throw new Error("Acesso negado");
+                
+                const csvText = await response.text();
+                const rows = csvText.split('\n').map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+                
+                if (rows.length > 1) {
+                    processar(rows);
+                    dot.className = "dot online";
+                    statusText.innerText = "Sincronizado com Google Sheets";
                 }
-                return { empresa: row[idxEmpresa], barco: row[idxBarco], data: dF, mesIdx: mIdx, nf: row[idxNF], valor: formatarMoeda(row[idxValor]) };
-            });
-
-            atualizarDashboard(processados);
+            } catch (err) {
+                dot.className = "dot error";
+                statusText.innerText = "Sincronia Offline (Suba para o GIT para ativar)";
+                console.error(err);
+            }
         }
 
-        function atualizarDashboard(dados) {
+        function limparMoeda(v) {
+            if (!v) return 0;
+            // Remove aspas, R$, pontos de milhar e converte vírgula decimal
+            let n = v.toString().replace(/"/g, '').replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+            return parseFloat(n) || 0;
+        }
+
+        function processar(rows) {
+            // No seu Sheets conforme o print: 
+            // Coluna D (index 3) = Embarcação
+            // Coluna E (index 4) = Data
+            // Coluna G (index 6) = Valor
+            rawData = rows.slice(1).map(row => {
+                if(!row[3] || !row[6]) return null;
+                
+                let dataStr = row[4].replace(/"/g, '').trim();
+                let mIdx = -1;
+                let partes = dataStr.split('/');
+                if(partes.length >= 2) mIdx = parseInt(partes[1]) - 1;
+
+                return {
+                    barco: row[3].replace(/"/g, '').trim(),
+                    valor: limparMoeda(row[6]),
+                    mesIdx: mIdx
+                };
+            }).filter(i => i !== null);
+            renderizar();
+        }
+
+        function renderizar() {
             let totalVal = 0;
             const matriz = {};
             const totaisMes = Array(8).fill(0);
 
-            dados.forEach(n => {
+            rawData.forEach(n => {
                 totalVal += n.valor;
                 if (!matriz[n.barco]) matriz[n.barco] = Array(8).fill(0);
                 if (n.mesIdx >= 0 && n.mesIdx < 8) {
@@ -304,62 +153,32 @@
 
             const barcosOrd = Object.keys(matriz).sort((a,b) => matriz[b].reduce((x,y)=>x+y,0) - matriz[a].reduce((x,y)=>x+y,0));
 
-            // Cards
             document.getElementById('card-total').innerText = totalVal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-            document.getElementById('card-nf-count').innerText = "▲ " + dados.length + " NF emitidas";
-            document.getElementById('card-media').innerText = (totalVal / dados.length || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-            
-            let maiorB = barcosOrd[0] || "-";
-            let vMaiorB = maiorB !== "-" ? matriz[maiorB].reduce((x,y)=>x+y,0) : 0;
-            document.getElementById('card-barco').innerText = maiorB;
-            document.getElementById('card-barco-percent').innerText = "Faturamento: " + vMaiorB.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('card-nf').innerText = `▲ ${rawData.length} NF emitidas`;
+            document.getElementById('card-media').innerText = (totalVal / rawData.length || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            document.getElementById('card-barco').innerText = barcosOrd[0] || "-";
+            let maxM = Math.max(...totaisMes);
+            document.getElementById('card-mes').innerText = maxM > 0 ? nomesMeses[totaisMes.indexOf(maxM)] : "-";
 
-            let maxMVal = Math.max(...totaisMes);
-            let maxMIdx = totaisMes.indexOf(maxMVal);
-            document.getElementById('card-mes').innerText = maxMVal > 0 ? nomesMeses[maxMIdx] : "-";
-            document.getElementById('card-mes-val').innerText = "Total: " + maxMVal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-
-            // Tabelas
             const tbody = document.getElementById('matrix-tbody');
             tbody.innerHTML = barcosOrd.map(b => {
-                let sumB = matriz[b].reduce((x,y)=>x+y,0);
-                return `<tr><td class="vessel-cell">${b}</td>` + 
-                    matriz[b].map(v => `<td class="val-cell">${v > 0 ? 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') +
-                    `<td class="val-cell total-col">R$ ${sumB.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+                let sB = matriz[b].reduce((x, y) => x + y, 0);
+                return `<tr><td><strong>${b}</strong></td>` + 
+                    matriz[b].map(v => `<td class="val-cell">${v > 0 ? v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') +
+                    `<td class="val-cell" style="background:rgba(34,197,94,0.05)">${sB.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td></tr>`;
             }).join('');
 
-            let footHtml = `<tr style="background:#111827; font-weight:bold; color:var(--accent-green)"><td>TOTAL MENSAL</td>`;
-            totaisMes.forEach(m => footHtml += `<td class="val-cell">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
-            footHtml += `<td class="val-cell">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
-            document.getElementById('matrix-tfoot').innerHTML = footHtml;
+            let foot = `<tr class="total-row"><td>TOTAL MENSAL</td>`;
+            totaisMes.forEach(m => foot += `<td class="val-cell">${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
+            foot += `<td class="val-cell">${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+            document.getElementById('matrix-tfoot').innerHTML = foot;
 
-            document.getElementById('details-tbody').innerHTML = dados.map(n => `
-                <tr><td><span class="badge">${n.empresa}</span></td><td><strong>${n.barco}</strong></td><td>${n.data}</td><td>${n.nf}</td><td class="val-cell">R$ ${n.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>
-            `).join('');
-
-            // Gráficos
             if(chartBar) chartBar.destroy();
-            if(chartLine) chartLine.destroy();
             chartBar = new Chart(document.getElementById('barChart'), {
                 type: 'bar',
-                data: { labels: barcosOrd, datasets: [{ label: 'Total R$', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+                data: { labels: barcosOrd, datasets: [{ label: 'Faturamento', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6' }] },
+                options: { responsive: true, maintainAspectRatio: false }
             });
+            if(chartLine) chartLine.destroy();
             chartLine = new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: { labels: ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO"], datasets: [{ label: 'Vendas', data: totaisMes, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
-            });
-        }
-
-        function exportToExcel() {
-            const table = document.querySelector("table");
-            const wb = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(wb, "Relatorio_Vendas_2026.xlsx");
-        }
-
-        // Se o código abrir e já houver dados na variável DADOS_VENDAS, renderiza automático
-        window.onload = () => { if(DADOS_VENDAS.length > 0) atualizarDashboard(DADOS_VENDAS); };
-    </script>
-</body>
-</html>
+    
