@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Vendas 2026 - Precisão Total</title>
+    <title>Painel de Vendas 2026 - Precisão Real Time</title>
     <!-- Bibliotecas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -50,7 +50,7 @@
             <h1>Painel de Vendas 2026</h1>
             <div class="status-box">
                 <div id="status-dot" class="dot loading"></div>
-                <span id="status-text">Sincronizando...</span>
+                <span id="status-text">Sincronizando com Google Sheets...</span>
             </div>
         </div>
         <button onclick="carregarDados()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold;">🔄 Atualizar Agora</button>
@@ -68,12 +68,12 @@
     </div>
 
     <div class="charts-grid">
-        <div class="chart-container"><div class="chart-title">Faturamento Individual</div><canvas id="barChart"></canvas></div>
+        <div class="chart-container"><div class="chart-title">Faturamento por Embarcação</div><canvas id="barChart"></canvas></div>
         <div class="chart-container"><div class="chart-title">Evolução Mensal</div><canvas id="lineChart"></canvas></div>
     </div>
 
     <div class="table-container">
-        <h3>Matriz Detalhada: Janeiro a Agosto</h3>
+        <h3>Matriz Detalhada: Janeiro a Agosto (Soma Total)</h3>
         <table>
             <thead>
                 <tr>
@@ -89,6 +89,7 @@
     </div>
 
     <script>
+        // LINK DE EXPORTAÇÃO DIRETA (FORÇA O DOWNLOAD DO CSV PURO)
         const SHEET_ID = '16E2_dadwyBxkx1432Qhpt3hhrEuBofvvf_92UHd1JkI';
         const URL_DADOS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
 
@@ -100,21 +101,20 @@
             const statusText = document.getElementById('status-text');
             const dot = document.getElementById('status-dot');
             dot.className = "dot loading";
-            statusText.innerText = "Buscando dados no Google...";
+            statusText.innerText = "Calculando faturamento...";
 
             try {
                 const response = await fetch(URL_DADOS + "&t=" + new Date().getTime());
                 const csvText = await response.text();
                 
-                // Lê o CSV usando biblioteca para evitar erro de vírgulas e aspas
+                // USANDO O MÉTODO XLSX PARA PROCESSAR O CSV (Resolve o erro da vírgula no R$)
                 const workbook = XLSX.read(csvText, { type: 'string' });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                
-                // Converte para JSON usando os nomes das colunas como chaves
-                const rows = XLSX.utils.sheet_to_json(sheet);
+                // {header: 1} converte em uma matriz simples [ [A, B, C], [A, B, C] ]
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-                if (rows.length > 0) {
-                    processarDadosMapeados(rows);
+                if (rows.length > 1) {
+                    processarDadosFinais(rows);
                     dot.className = "dot online";
                     statusText.innerText = "Sincronizado com Sucesso (" + rawData.length + " notas)";
                 }
@@ -125,27 +125,36 @@
             }
         }
 
+        // LIMPEZA DE MOEDA ULTRA-AGRESSIVA PARA NÃO PERDER CENTAVOS
         function limparMoeda(v) {
             if (v === undefined || v === null || v === "") return 0;
             if (typeof v === 'number') return v;
-            // Remove R$, espaços, pontos de milhar e troca vírgula por ponto decimal
-            let n = v.toString().replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+            
+            // Pega apenas números, pontos e vírgulas
+            let n = v.toString().replace(/R\$/g, '').replace(/\s/g, '');
+            // Se o formato for 1.234,56
+            if (n.includes('.') && n.includes(',')) {
+                n = n.replace(/\./g, '').replace(',', '.');
+            } else {
+                // Se o formato for apenas 1234,56
+                n = n.replace(',', '.');
+            }
             return parseFloat(n) || 0;
         }
 
-        function processarDadosMapeados(rows) {
-            // Busca os nomes das colunas de forma inteligente (fuzzy search)
-            const chaves = Object.keys(rows[0]);
-            const colBarco = chaves.find(k => k.toLowerCase().includes("embarca"));
-            const colData = chaves.find(k => k.toLowerCase().includes("data"));
-            const colValor = chaves.find(k => k.toLowerCase().includes("valor"));
+        function processarDadosFinais(rows) {
+            // Mapeamento automático baseado nos títulos
+            const header = rows[0].map(h => h ? h.toString().toUpperCase().trim() : "");
+            const idxBarco = header.indexOf("EMBARCAÇÃO") !== -1 ? header.indexOf("EMBARCAÇÃO") : 3;
+            const idxData = header.indexOf("DATA") !== -1 ? header.indexOf("DATA") : 4;
+            const idxValor = header.findIndex(h => h.includes("VALOR"));
 
-            rawData = rows.map(row => {
-                let barco = row[colBarco] ? row[colBarco].toString().trim() : null;
-                let valor = limparMoeda(row[colValor]);
-                let dataStr = row[colData] ? row[colData].toString().trim() : "";
+            rawData = rows.slice(1).map(row => {
+                let barco = row[idxBarco] ? row[idxBarco].toString().trim() : null;
+                let valor = limparMoeda(row[idxValor]);
+                let dataStr = row[idxData] ? row[idxData].toString().trim() : "";
                 
-                if (!barco || valor === 0) return null;
+                if (!barco || barco === "") return null;
 
                 let mIdx = -1;
                 let partes = dataStr.split('/');
@@ -171,12 +180,12 @@
                 }
             });
 
-            // Ordenação: Maior para Menor
+            // Ranking de Barcos
             const barcosOrd = Object.keys(matriz).sort((a,b) => 
                 matriz[b].reduce((x,y)=>x+y,0) - matriz[a].reduce((x,y)=>x+y,0)
             );
 
-            // Cards
+            // Preencher Cards
             document.getElementById('card-total').innerText = totalVal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('card-nf').innerText = `▲ ${rawData.length} NF emitidas`;
             document.getElementById('card-media').innerText = (totalVal / rawData.length || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
@@ -194,7 +203,7 @@
                     `<td class="val-cell total-col">R$ ${sB.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td></tr>`;
             }).join('');
 
-            // Rodapé
+            // Totais
             let footHtml = `<tr style="background:#111827; font-weight:bold; color:var(--accent-green)"><td>TOTAL MENSAL</td>`;
             totaisPorMes.forEach(m => footHtml += `<td class="val-cell">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`);
             footHtml += `<td class="val-cell">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
@@ -204,7 +213,7 @@
             if(chartBar) chartBar.destroy();
             chartBar = new Chart(document.getElementById('barChart'), {
                 type: 'bar',
-                data: { labels: barcosOrd, datasets: [{ label: 'Faturamento', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6', borderRadius: 4 }] },
+                data: { labels: barcosOrd, datasets: [{ label: 'Faturamento R$', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6', borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
             if(chartLine) chartLine.destroy();
