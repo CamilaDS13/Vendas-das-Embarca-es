@@ -6,31 +6,145 @@
     <title>SISTEMA PINHEIRO | VENDAS EMBARCAÇÕES</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-body: #0a0a0c; --card-bg: #1c1c1e; --pinheiro-blue: #2b2d84; --pinheiro-orange: #f38218; --pinheiro-green: #22c55e; --text-main: #ffffff; --text-dim: #a1a1aa; --border: rgba(255, 255, 255, 0.1); }
+        :root { 
+            --bg-body: #0a0a0c; 
+            --card-bg: #161b22; 
+            --pinheiro-blue: #2b2d84; 
+            --pinheiro-orange: #f38218; 
+            --pinheiro-green: #22c55e; 
+            --text-main: #ffffff; 
+            --text-dim: #a1a1aa; 
+            --border: rgba(255, 255, 255, 0.08); 
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); padding: 30px; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-        .title-group h1 { font-size: 26px; font-weight: 800; letter-spacing: -1px; text-transform: uppercase; }
-        .status-pills { display: flex; gap: 12px; margin-top: 15px; }
-        .pill { background: var(--card-bg); padding: 8px 16px; border-radius: 50px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); }
+        
+        /* Preenchimento total da tela */
+        body { 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            padding: 25px 35px; 
+            min-height: 100vh;
+        }
+        
+        .container { 
+            width: 100%; 
+            max-width: 100%; 
+            margin: 0 auto; 
+        }
+
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+        }
+
+        .title-group h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
+        .status-pills { display: flex; gap: 12px; margin-top: 10px; }
+        .pill { background: var(--card-bg); padding: 7px 16px; border-radius: 50px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pinheiro-green); box-shadow: 0 0 10px var(--pinheiro-green); }
         .loading-dot { background: var(--pinheiro-orange); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card-kpi { background: var(--card-bg); padding: 25px; border-radius: 24px; border: 1px solid var(--border); position: relative; }
-        .card-kpi::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 3px; background: var(--pinheiro-blue); border-radius: 10px 10px 0 0; }
+
+        /* KPIs */
+        .metrics-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 25px; 
+        }
+        .card-kpi { 
+            background: var(--card-bg); 
+            padding: 22px 25px; 
+            border-radius: 18px; 
+            border: 1px solid var(--border); 
+            position: relative; 
+        }
+        .card-kpi::after { content: ''; position: absolute; bottom: 0; left: 15%; right: 15%; height: 3px; background: var(--pinheiro-blue); border-radius: 10px 10px 0 0; }
         .kpi-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-        .kpi-value { font-size: 24px; font-weight: 800; margin-top: 8px; display: block; }
-        .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .chart-card { background: var(--card-bg); padding: 25px; border-radius: 24px; border: 1px solid var(--border); height: 350px; }
-        .table-section { background: var(--card-bg); padding: 25px; border-radius: 24px; border: 1px solid var(--border); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { text-align: left; padding: 15px; background: #111827; color: var(--text-dim); font-weight: 700; text-transform: uppercase; border: 1px solid var(--border); }
-        td { padding: 12px 15px; border: 1px solid var(--border); }
-        .val-bold { font-family: 'Courier New', monospace; font-weight: bold; text-align: right; }
+        .kpi-value { font-size: 26px; font-weight: 800; margin-top: 8px; display: block; }
+
+        /* Gráficos */
+        .charts-row { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 20px; 
+            margin-bottom: 25px; 
+        }
+        .chart-card { 
+            background: var(--card-bg); 
+            padding: 22px; 
+            border-radius: 18px; 
+            border: 1px solid var(--border); 
+            height: 340px; 
+        }
+
+        /* Seção da Tabela em Tela Cheia */
+        .table-section { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            overflow-x: auto; 
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 13px; 
+            white-space: nowrap; /* Não quebra os valores */
+        }
+
+        th { 
+            padding: 16px 14px; 
+            background: #0d1117; 
+            color: var(--text-dim); 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            border: 1px solid var(--border); 
+            font-size: 11px;
+            letter-spacing: 0.8px;
+        }
+
+        td { 
+            padding: 14px 14px; 
+            border: 1px solid var(--border); 
+            vertical-align: middle;
+        }
+
+        /* Efeito de destaque ao passar o mouse */
+        tbody tr { transition: background 0.15s ease; }
+        tbody tr:hover { background-color: rgba(255, 255, 255, 0.04); }
+
+        .barco-col {
+            font-weight: 700;
+            color: #f3f4f6;
+            min-width: 220px;
+        }
+
+        .val-bold { 
+            font-variant-numeric: tabular-nums; 
+            font-weight: 600; 
+            text-align: right; 
+            white-space: nowrap; 
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .val-empty {
+            color: #4b5563;
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            body { padding: 15px; }
+            .charts-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -43,7 +157,7 @@
                     <div class="pill">🚢 LOGÍSTICA NAVAL</div>
                 </div>
             </div>
-            <img src="https://raw.githubusercontent.com/CamilaDS13/imagens/Principal/logobranca.png" style="height: 40px;" onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/CamilaDS13/imagens/Principal/logobranca.png" style="height: 38px;" onerror="this.style.display='none'">
         </header>
 
         <div class="metrics-grid">
@@ -60,9 +174,7 @@
 
         <div class="table-section">
             <table id="mainTable">
-                <thead id="table-head">
-                    <!-- Gerado dinamicamente -->
-                </thead>
+                <thead id="table-head"></thead>
                 <tbody id="table-body"></tbody>
             </table>
         </div>
@@ -99,7 +211,6 @@
             rawData = rows.slice(1).filter(r => r[3] && r[6]).map(row => {
                 let d = row[4], mIdx = -1;
                 if (typeof d === 'number') {
-                    // Soma 0.5 para garantir meio-dia UTC e evitar recuo de fuso horário brasileiro
                     const dt = new Date((d - 25569 + 0.5) * 86400 * 1000);
                     mIdx = dt.getUTCMonth();
                 } else if (d) { 
@@ -114,7 +225,6 @@
         function renderizar() {
             if (!rawData.length) return;
 
-            // Identifica dinamicamente o último mês com dados (mínimo 9 para incluir Setembro)
             const maxMesFound = Math.max(...rawData.map(n => n.mesIdx).filter(m => m >= 0 && m < 12), 8);
             const numMeses = Math.min(12, maxMesFound + 1);
 
@@ -134,34 +244,39 @@
 
             const barcosOrd = Object.keys(matriz).sort((a, b) => matriz[b].reduce((x, y) => x + y, 0) - matriz[a].reduce((x, y) => x + y, 0));
 
-            // Atualiza KPIs
+            // KPIs
             document.getElementById('v-total').innerText = totalVal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-            document.getElementById('v-notas').innerText = rawData.length;
+            document.getElementById('v-notas').innerText = rawData.length.toLocaleString('pt-BR');
             document.getElementById('v-media').innerText = (totalVal / rawData.length).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
             
             let maxM = Math.max(...totaisMes); 
             document.getElementById('v-mes').innerText = mesesNomes[totaisMes.indexOf(maxM)];
 
-            // Monta o cabeçalho da tabela dinamicamente
+            // Cabeçalho da Tabela
             document.getElementById('table-head').innerHTML = `
                 <tr>
-                    <th style="width:250px">Embarcação</th>
-                    ${activeSiglas.map(s => `<th class="val-bold">${s}</th>`).join('')}
-                    <th class="val-bold">TOTAL</th>
+                    <th style="text-align: left; min-width: 220px;">Embarcação</th>
+                    ${activeSiglas.map(s => `<th class="val-bold" style="text-align: right;">${s}</th>`).join('')}
+                    <th class="val-bold" style="text-align: right; color: var(--pinheiro-green);">TOTAL</th>
                 </tr>
             `;
 
-            // Monta o corpo da tabela
+            // Linhas da Tabela
             document.getElementById('table-body').innerHTML = barcosOrd.map(b => {
                 let sB = matriz[b].reduce((x, y) => x + y, 0);
-                return `<tr><td><strong>${b}</strong></td>` + 
-                    matriz[b].map(v => `<td class="val-bold">${v > 0 ? 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') + 
-                    `<td class="val-bold" style="color:var(--pinheiro-green)">R$ ${sB.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+                return `<tr>
+                    <td class="barco-col">${b}</td>
+                    ${matriz[b].map(v => v > 0 
+                        ? `<td class="val-bold">R$ ${v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>` 
+                        : `<td class="val-empty">-</td>`
+                    ).join('')}
+                    <td class="val-bold" style="color:var(--pinheiro-green); font-weight:800;">R$ ${sB.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                </tr>`;
             }).join('') + `
-                <tr style="background:#111827; font-weight:bold; color:var(--pinheiro-green)">
-                    <td>TOTAL MENSAL</td>
-                    ${totaisMes.map(m => `<td class="val-bold">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`).join('')}
-                    <td class="val-bold">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+                <tr style="background:#0d1117; font-weight:800;">
+                    <td style="color: var(--pinheiro-green); font-weight: 800;">TOTAL MENSAL</td>
+                    ${totaisMes.map(m => `<td class="val-bold" style="color: var(--pinheiro-green); font-weight:800;">R$ ${m.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>`).join('')}
+                    <td class="val-bold" style="color: var(--pinheiro-green); font-size: 14px; font-weight:900;">R$ ${totalVal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 </tr>
             `;
 
@@ -174,7 +289,8 @@
                     datasets: [{ 
                         label: 'Faturamento', 
                         data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), 
-                        backgroundColor: '#3b82f6' 
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
                     }] 
                 }, 
                 options: { responsive: true, maintainAspectRatio: false } 
@@ -191,7 +307,9 @@
                         borderColor: '#22c55e', 
                         backgroundColor: 'rgba(34, 197, 94, 0.1)', 
                         fill: true, 
-                        tension: 0.3 
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#22c55e'
                     }] 
                 }, 
                 options: { responsive: true, maintainAspectRatio: false } 
