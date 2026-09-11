@@ -43,7 +43,7 @@
                     <div class="pill">🚢 LOGÍSTICA NAVAL</div>
                 </div>
             </div>
-            <img src="https://raw.githubusercontent.com/CamilaDS13/imagens/Principal/logobranca.png" style="height: 40px;">
+            <img src="https://raw.githubusercontent.com/CamilaDS13/imagens/Principal/logobranca.png" style="height: 40px;" onerror="this.style.display='none'">
         </header>
 
         <div class="metrics-grid">
@@ -60,13 +60,8 @@
 
         <div class="table-section">
             <table id="mainTable">
-                <thead>
-                    <tr>
-                        <th style="width:250px">Embarcação</th>
-                        <th class="val-bold">JAN</th><th class="val-bold">FEV</th><th class="val-bold">MAR</th>
-                        <th class="val-bold">ABR</th><th class="val-bold">MAI</th><th class="val-bold">JUN</th>
-                        <th class="val-bold">JUL</th><th class="val-bold">AGO</th><th class="val-bold">TOTAL</th>
-                    </tr>
+                <thead id="table-head">
+                    <!-- Gerado dinamicamente -->
                 </thead>
                 <tbody id="table-body"></tbody>
             </table>
@@ -78,7 +73,9 @@
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=xlsx`;
         let rawData = [];
         let chartBar, chartLine;
-        const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto"];
+        
+        const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const mesesSiglas = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 
         async function init() {
             try {
@@ -101,36 +98,104 @@
         function processar(rows) {
             rawData = rows.slice(1).filter(r => r[3] && r[6]).map(row => {
                 let d = row[4], mIdx = -1;
-                if (typeof d === 'number') mIdx = new Date((d - 25569) * 86400 * 1000).getMonth();
-                else if (d) { let p = d.split('/'); if(p.length>=2) mIdx = parseInt(p[1])-1; }
+                if (typeof d === 'number') {
+                    // Soma 0.5 para garantir meio-dia UTC e evitar recuo de fuso horário brasileiro
+                    const dt = new Date((d - 25569 + 0.5) * 86400 * 1000);
+                    mIdx = dt.getUTCMonth();
+                } else if (d) { 
+                    let p = d.toString().split(/[\/\-]/); 
+                    if(p.length >= 2) mIdx = parseInt(p[1], 10) - 1; 
+                }
                 return { barco: row[3].toString().trim(), valor: limpar(row[6]), mesIdx: mIdx };
             });
             renderizar();
         }
 
         function renderizar() {
-            let totalVal = 0; const matriz = {}; const totaisMes = Array(8).fill(0);
+            if (!rawData.length) return;
+
+            // Identifica dinamicamente o último mês com dados (mínimo 9 para incluir Setembro)
+            const maxMesFound = Math.max(...rawData.map(n => n.mesIdx).filter(m => m >= 0 && m < 12), 8);
+            const numMeses = Math.min(12, maxMesFound + 1);
+
+            const activeSiglas = mesesSiglas.slice(0, numMeses);
+            let totalVal = 0; 
+            const matriz = {}; 
+            const totaisMes = Array(numMeses).fill(0);
+
             rawData.forEach(n => {
                 totalVal += n.valor;
-                if (!matriz[n.barco]) matriz[n.barco] = Array(8).fill(0);
-                if (n.mesIdx >= 0 && n.mesIdx < 8) { matriz[n.barco][n.mesIdx] += n.valor; totaisMes[n.mesIdx] += n.valor; }
+                if (!matriz[n.barco]) matriz[n.barco] = Array(numMeses).fill(0);
+                if (n.mesIdx >= 0 && n.mesIdx < numMeses) { 
+                    matriz[n.barco][n.mesIdx] += n.valor; 
+                    totaisMes[n.mesIdx] += n.valor; 
+                }
             });
+
             const barcosOrd = Object.keys(matriz).sort((a, b) => matriz[b].reduce((x, y) => x + y, 0) - matriz[a].reduce((x, y) => x + y, 0));
 
+            // Atualiza KPIs
             document.getElementById('v-total').innerText = totalVal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('v-notas').innerText = rawData.length;
-            document.getElementById('v-media').innerText = (totalVal/rawData.length).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            let maxM = Math.max(...totaisMes); document.getElementById('v-mes').innerText = mesesNomes[totaisMes.indexOf(maxM)];
+            document.getElementById('v-media').innerText = (totalVal / rawData.length).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            
+            let maxM = Math.max(...totaisMes); 
+            document.getElementById('v-mes').innerText = mesesNomes[totaisMes.indexOf(maxM)];
 
+            // Monta o cabeçalho da tabela dinamicamente
+            document.getElementById('table-head').innerHTML = `
+                <tr>
+                    <th style="width:250px">Embarcação</th>
+                    ${activeSiglas.map(s => `<th class="val-bold">${s}</th>`).join('')}
+                    <th class="val-bold">TOTAL</th>
+                </tr>
+            `;
+
+            // Monta o corpo da tabela
             document.getElementById('table-body').innerHTML = barcosOrd.map(b => {
                 let sB = matriz[b].reduce((x, y) => x + y, 0);
-                return `<tr><td><strong>${b}</strong></td>` + matriz[b].map(v => `<td class="val-bold">${v > 0 ? 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') + `<td class="val-bold" style="color:var(--pinheiro-green)">R$ ${sB.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
-            }).join('') + `<tr style="background:#111827; font-weight:bold; color:var(--pinheiro-green)"><td>TOTAL MENSAL</td>${totaisMes.map(m => `<td class="val-bold">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`).join('')}<td class="val-bold">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+                return `<tr><td><strong>${b}</strong></td>` + 
+                    matriz[b].map(v => `<td class="val-bold">${v > 0 ? 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2}) : '-'}</td>`).join('') + 
+                    `<td class="val-bold" style="color:var(--pinheiro-green)">R$ ${sB.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+            }).join('') + `
+                <tr style="background:#111827; font-weight:bold; color:var(--pinheiro-green)">
+                    <td>TOTAL MENSAL</td>
+                    ${totaisMes.map(m => `<td class="val-bold">R$ ${m.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>`).join('')}
+                    <td class="val-bold">R$ ${totalVal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+                </tr>
+            `;
 
+            // Gráficos
             if(chartBar) chartBar.destroy();
-            chartBar = new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels: barcosOrd, datasets: [{ label: 'Faturamento', data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: false } });
+            chartBar = new Chart(document.getElementById('barChart'), { 
+                type: 'bar', 
+                data: { 
+                    labels: barcosOrd, 
+                    datasets: [{ 
+                        label: 'Faturamento', 
+                        data: barcosOrd.map(b => matriz[b].reduce((x,y)=>x+y,0)), 
+                        backgroundColor: '#3b82f6' 
+                    }] 
+                }, 
+                options: { responsive: true, maintainAspectRatio: false } 
+            });
+
             if(chartLine) chartLine.destroy();
-            chartLine = new Chart(document.getElementById('lineChart'), { type: 'line', data: { labels: ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO"], datasets: [{ label: 'Evolução', data: totaisMes, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            chartLine = new Chart(document.getElementById('lineChart'), { 
+                type: 'line', 
+                data: { 
+                    labels: activeSiglas, 
+                    datasets: [{ 
+                        label: 'Evolução', 
+                        data: totaisMes, 
+                        borderColor: '#22c55e', 
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)', 
+                        fill: true, 
+                        tension: 0.3 
+                    }] 
+                }, 
+                options: { responsive: true, maintainAspectRatio: false } 
+            });
         }
         window.onload = init;
     </script>
